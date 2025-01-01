@@ -537,12 +537,17 @@ void Widget::hideStop() {
 	if (_hiding) {
 		_hiding = false;
 		_hidingDelayed = {};
-		_a_opacity.start([this] { opacityAnimationCallback(); }, 0., 1., st::notifyFastAnim);
+		// Using `.change` instead of `.start` because we want to start
+		// animation from the current opacity level, not blink it.
+		_a_opacity.change(1., st::notifyFastAnim);
 	}
 }
 
 void Widget::hideAnimated(float64 duration, const anim::transition &func) {
 	_hiding = true;
+	// Using `.start` instead of `.change` because we want to ensure the notification
+	// is fully restored before starting to hide it (it may not have been restored if
+	// the cursor has passed through it too quickly, see #28811).
 	_a_opacity.start([this] { opacityAnimationCallback(); }, 1., 0., duration, func);
 }
 
